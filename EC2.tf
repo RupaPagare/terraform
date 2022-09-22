@@ -1,21 +1,29 @@
-provider "aws" {
-              profile = "default"
-              region = "ap-south-1"
-              access_key = "AKIAYLZYY2L65FTCGN55"
-              secret_key = "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"
+data "huaweicloud_availability_zones" "myaz" {}
+
+data "huaweicloud_compute_flavors" "myflavor" {
+  availability_zone = data.huaweicloud_availability_zones.myaz.names[0]
+  performance_type  = "normal"
+  cpu_core_count    = 2
+  memory_size       = 4
 }
-resource "aws_instance" "ec2-terraform" {
-              ami ="ami-06489866022e12a14"
-              instance_type = "t2.micro"
-              security_groups = [aws_security_group.TerraformEc2_security1.name]
-              key_name = "Rupa.pem"
-              tags = { ec2_create = "instance1"}
+
+data "huaweicloud_vpc_subnet" "mynet" {
+  name = "subnet-default"
 }
-resource "aws_default_vpc" "main" {
-              tags = { Name = "main" }
+
+data "huaweicloud_images_image" "myimage" {
+  name        = "Ubuntu 18.04 server 64bit"
+  most_recent = true
 }
-resource "aws_ebs_volume" "vol" {
-              availibility_zone = "ap-south-1"
-              size              = 8
-              tags = { key_name = "Rupa.pem"}
+
+resource "huaweicloud_compute_instance" "basic" {
+  name              = "basic"
+  image_id          = data.huaweicloud_images_image.myimage.id
+  flavor_id         = data.huaweicloud_compute_flavors.myflavor.ids[0]
+  security_groups   = ["default"]
+  availability_zone = data.huaweicloud_availability_zones.myaz.names[0]
+
+  network {
+    uuid = data.huaweicloud_vpc_subnet.mynet.id
+  }
 }
