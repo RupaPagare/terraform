@@ -1,39 +1,21 @@
-resource "aws_instance" "ec2-terraform"{
-    ami = "06489866022e12a14"
-    count=1
-    key_name = "Rupa.pem"
-    instance_type="t2-micro"
-    security_group=["security_jenkins_port"]
-    tags= {
-        Name= "jenkins_instance"
-    }
+provider "aws" {
+              profile = "default"
+              region = "ap-south-1"
+              access_key = "AKIAYLZYY2L65FTCGN55"
+              secret_key = "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"
 }
-
-resource "aws_security_group" "security_jenkins_port" {
-    name = "security_jenkins_port"
-    description = "security group for jenkins"
-
-    ingress{
-        from_port =8080
-        to_port   =8080
-        protocol  = "tcp"
-        cidr_blocks = ["0.0.0.0/0"]
-    }
-    ingress{
-        from_port =22
-        to_port   =22
-        protocol  = "tcp"
-        cidr_blocks = ["0.0.0.0/0"]
-    }
-# outbound from jenkins server
-    egress{
-        from_port =0
-        to_port   =65535
-        protocol  = "tcp"
-        cidr_blocks = ["0.0.0.0/0"]
-    }
-
-    tags= {
-        Name= "security_jenkins_port"
-    }
+resource "aws_instance" "ec2-terraform" {
+              ami ="ami-06489866022e12a14"
+              instance_type = "t2.micro"
+              security_groups = [aws_security_group.TerraformEc2_security1.name]
+              key_name = "ec2instance"
+              tags = { ec2_create = "instance1"}
+}
+resource "aws_default_vpc" "main" {
+              tags = { Name = "main" }
+}
+resource "aws_ebs_volume" "vol" {
+              availibility_zone = "ap-south-1"
+              size              = 8
+              tags = { key_name = "ec2instance"}
 }
